@@ -10,7 +10,6 @@ type SKU struct {
 	SellerID  string    `gorm:"not null;index:idx_tenant_seller_sku,unique" json:"seller_id"`
 	SKUCode   string    `gorm:"not null;index:idx_tenant_seller_sku,unique" json:"sku_code"`
 	Name      string    `json:"name"`
-	Category  string    `json:"category"`
 	CreatedAt time.Time `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt time.Time `gorm:"autoUpdateTime" json:"updated_at"`
 }

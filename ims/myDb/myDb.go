@@ -4,13 +4,16 @@ import(
 	"log"
 	"github.com/omniful/go_commons/config"
 	"github.com/omniful/go_commons/db/sql/postgres"
-
+	
+	"github.com/omniful/go_commons/redis"
 	"github.com/angel-omniful/ims/myContext"
 
 )
+var db *postgres.DbCluster
+var cache *redis.Client
 
 
-func ConnectDB() *postgres.DbCluster {
+func init(){
 	ctx := myContext.GetContext()
 	myHost := config.GetString(ctx, "postgres.master.host")
 	myPort := config.GetString(ctx, "postgres.master.port")
@@ -37,25 +40,37 @@ func ConnectDB() *postgres.DbCluster {
 	// they can be added later if needed
 	slavesConfig := make([]postgres.DBConfig, 0) // read replicas
 
-	db := postgres.InitializeDBInstance(masterConfig, &slavesConfig)
+	db = postgres.InitializeDBInstance(masterConfig, &slavesConfig)
 
 	//db is a cluster here
 	log.Println("Connecting to the database...")
+	if db == nil {
+		log.Panic("failed to connect to the database")
+	} else {
+		log.Println("Database connected successfully!")
+	}
+
+	log.Println("Connecting to the redis_cache...")
+	config := &redis.Config{
+    Hosts: []string{"localhost:6379"},
+    PoolSize: 50,
+    MinIdleConn: 10,
+	}
+
+	cache = redis.NewClient(config)
+	if cache == nil {
+		log.Panic("failed to connect to the redis cache")
+	} else {
+		log.Println("Redis cache connected successfully!")
+	}
+}
+
+func GetDb() *postgres.DbCluster {
 	return db
 }
 
-// func ConnectRedis() *redis.Client {
-// 	config := &redis.Config{
-// 		Hosts:       []string{"localhost:6379"},
-// 		PoolSize:    50,
-// 		MinIdleConn: 10,
-// 	}
-// 	client := redis.NewClient(config)
-// 	return client
-// }
+func GetCache() *redis.Client {
+	return cache
+}		
 
 	
-// func GetRedis() *redis.Client {
-// 	rds := ConnectRedis()
-// 	return rds
-// }
